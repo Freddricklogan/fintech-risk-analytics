@@ -1,0 +1,16 @@
+symbol,name,shares,avg_cost,current_price,sector,weight
+AAPL,Apple Inc.,150,142.50,178.25,Technology,0.12
+MSFT,Microsoft Corp.,120,310.00,415.80,Technology,0.14
+GOOGL,Alphabet Inc.,45,125.00,168.50,Technology,0.08
+AMZN,Amazon.com Inc.,80,145.00,192.30,Technology,0.09
+JPM,JPMorgan Chase,90,155.00,198.40,Financials,0.08
+GS,Goldman Sachs,30,350.00,478.60,Financials,0.06
+V,Visa Inc.,60,240.00,295.20,Financials,0.07
+JNJ,Johnson & Johnson,70,160.00,158.90,Healthcare,0.05
+UNH,UnitedHealth Group,25,480.00,542.10,Healthcare,0.06
+PFE,Pfizer Inc.,200,30.00,28.50,Healthcare,0.03
+XOM,Exxon Mobil,85,95.00,112.40,Energy,0.05
+NEE,NextEra Energy,55,72.00,78.30,Utilities,0.02
+PG,Procter & Gamble,50,155.00,168.40,Consumer Staples,0.04
+KO,Coca-Cola Co.,100,58.00,62.10,Consumer Staples,0.03
+NVDA,NVIDIA Corp.,40,650.00,875.50,Technology,0.08

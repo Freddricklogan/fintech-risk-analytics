@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTech Risk Analytics Platform</title>
+    <meta name="description" content="Financial risk analytics dashboard with VaR, Monte Carlo simulation, and Black-Scholes options pricing.">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1><span>&#9670;</span> FinTech Risk Analytics Platform</h1>
+        <span class="header-meta">Real-Time Portfolio Risk Analysis</span>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('portfolio')">Portfolio Overview</button>
+        <button class="tab-btn" onclick="switchTab('risk')">Risk Metrics</button>
+        <button class="tab-btn" onclick="switchTab('montecarlo')">Monte Carlo</button>
+        <button class="tab-btn" onclick="switchTab('options')">Options Pricing</button>
+    </nav>
+
+    <!-- Portfolio Overview -->
+    <section id="tab-portfolio" class="tab-panel active">
+        <div class="stats-row">
+            <div class="stat-box"><div class="label">Portfolio Value</div><div class="value accent" id="portfolio-value">--</div></div>
+            <div class="stat-box"><div class="label">Total Cost Basis</div><div class="value" id="portfolio-cost">--</div></div>
+            <div class="stat-box"><div class="label">Total P&L</div><div class="value" id="portfolio-pnl">--</div></div>
+            <div class="stat-box"><div class="label">Return</div><div class="value" id="portfolio-return">--</div></div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Sector Allocation</h3>
+                <div id="allocation-chart"></div>
+            </div>
+            <div class="card">
+                <h3>Holdings</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Symbol</th><th>Name</th><th>Shares</th><th>Avg Cost</th><th>Price</th><th>P&L</th></tr></thead>
+                        <tbody id="holdings-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Metrics -->
+    <section id="tab-risk" class="tab-panel">
+        <div class="stats-row">
+            <div class="stat-box"><div class="label">VaR (95%, Parametric)</div><div class="value loss" id="var-param">--</div></div>
+            <div class="stat-box"><div class="label">VaR (95%, Historical)</div><div class="value loss" id="var-hist">--</div></div>
+            <div class="stat-box"><div class="label">CVaR (95%)</div><div class="value loss" id="cvar">--</div></div>
+            <div class="stat-box"><div class="label">Sharpe Ratio</div><div class="value accent" id="sharpe">--</div></div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Risk / Return by Holding</h3>
+                <div id="risk-return-chart"></div>
+            </div>
+            <div class="card">
+                <h3>Portfolio Drawdown</h3>
+                <div id="drawdown-chart"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Monte Carlo Simulation -->
+    <section id="tab-montecarlo" class="tab-panel">
+        <div class="card">
+            <h3>Monte Carlo Simulation</h3>
+            <div class="mc-controls">
+                <div class="form-group">
+                    <label>Simulations</label>
+                    <input type="number" id="mc-num-sims" value="500" min="100" max="5000" step="100">
+                </div>
+                <div class="form-group">
+                    <label>Time Horizon (Days)</label>
+                    <input type="number" id="mc-days" value="252" min="20" max="504" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Expected Return (%)</label>
+                    <input type="number" id="mc-return" value="10" min="-20" max="50" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Volatility (%)</label>
+                    <input type="number" id="mc-vol" value="20" min="5" max="80" step="1">
+                </div>
+                <button class="btn-primary" onclick="runMonteCarlo()">Run Simulation</button>
+            </div>
+            <div id="mc-paths-chart"></div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Distribution of Final Values</h3>
+                <div id="mc-dist-chart"></div>
+            </div>
+            <div class="card">
+                <h3>Simulation Statistics</h3>
+                <div class="stats-row" style="margin-bottom:0">
+                    <div class="stat-box"><div class="label">Mean Final Value</div><div class="value accent" id="mc-mean">--</div></div>
+                    <div class="stat-box"><div class="label">Median</div><div class="value" id="mc-median">--</div></div>
+                    <div class="stat-box"><div class="label">5th Percentile</div><div class="value loss" id="mc-p5">--</div></div>
+                    <div class="stat-box"><div class="label">95th Percentile</div><div class="value gain" id="mc-p95">--</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Options Pricing -->
+    <section id="tab-options" class="tab-panel">
+        <div class="card">
+            <h3>Black-Scholes Options Pricing Calculator</h3>
+            <div class="option-toggle">
+                <button class="active" id="btn-call" onclick="setOptionType('call')">Call Option</button>
+                <button id="btn-put" onclick="setOptionType('put')">Put Option</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Spot Price ($)</label><input type="number" id="bs-spot" value="100" step="0.01"></div>
+                <div class="form-group"><label>Strike Price ($)</label><input type="number" id="bs-strike" value="100" step="0.01"></div>
+                <div class="form-group"><label>Time to Expiry (Years)</label><input type="number" id="bs-time" value="0.25" step="0.01" min="0.01"></div>
+                <div class="form-group"><label>Risk-Free Rate (%)</label><input type="number" id="bs-rate" value="5" step="0.1"></div>
+                <div class="form-group"><label>Volatility (%)</label><input type="number" id="bs-vol" value="20" step="1"></div>
+                <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn-primary" onclick="calculateOption()" style="width:100%">Calculate</button></div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-box"><div class="label">Option Price</div><div class="value accent" id="bs-price">--</div></div>
+                <div class="stat-box"><div class="label">Intrinsic Value</div><div class="value" id="bs-intrinsic">--</div></div>
+                <div class="stat-box"><div class="label">Time Value</div><div class="value" id="bs-time-value">--</div></div>
+            </div>
+            <h3 style="margin-top:16px;font-size:0.85rem;margin-bottom:12px">Greeks</h3>
+            <div class="greeks-grid">
+                <div class="greek-item"><div class="name">Delta</div><div class="val" id="greek-delta">--</div></div>
+                <div class="greek-item"><div class="name">Gamma</div><div class="val" id="greek-gamma">--</div></div>
+                <div class="greek-item"><div class="name">Theta</div><div class="val" id="greek-theta">--</div></div>
+                <div class="greek-item"><div class="name">Vega</div><div class="val" id="greek-vega">--</div></div>
+                <div class="greek-item"><div class="name">Rho</div><div class="val" id="greek-rho">--</div></div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Payoff Diagram</h3>
+            <div id="payoff-chart"></div>
+        </div>
+    </section>
+
+    <script src="js/risk-engine.js"></script>
+    <script src="js/black-scholes.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        let portfolioData = [];
+        let marketData = {};
+        let currentOptionType = 'call';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load portfolio CSV
+            const csvRes = await fetch('data/portfolio.csv');
+            const csvText = await csvRes.text();
+            const parsed = Papa.parse(csvText, { header: true, dynamicTyping: true });
+            portfolioData = parsed.data.filter(r => r.symbol);
+
+            // Load market data
+            const mdRes = await fetch('data/market-data.json');
+            marketData = await mdRes.json();
+
+            renderPortfolio();
+            renderRisk();
+            calculateOption();
+        });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function renderPortfolio() {
+            let totalValue = 0, totalCost = 0;
+            const tbody = document.getElementById('holdings-tbody');
+            tbody.innerHTML = portfolioData.map(h => {
+                const value = h.shares * h.current_price;
+                const cost = h.shares * h.avg_cost;
+                const pnl = value - cost;
+                totalValue += value;
+                totalCost += cost;
+                return `<tr>
+                    <td><strong>${h.symbol}</strong></td>
+                    <td>${h.name}</td>
+                    <td>${h.shares}</td>
+                    <td>$${h.avg_cost.toFixed(2)}</td>
+                    <td>$${h.current_price.toFixed(2)}</td>
+                    <td class="${pnl >= 0 ? 'positive' : 'negative'}">$${pnl.toFixed(0)}</td>
+                </tr>`;
+            }).join('');
+
+            const pnl = totalValue - totalCost;
+            const ret = ((totalValue / totalCost) - 1) * 100;
+            document.getElementById('portfolio-value').textContent = '$' + totalValue.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('portfolio-cost').textContent = '$' + totalCost.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('portfolio-pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('portfolio-pnl').className = 'value ' + (pnl >= 0 ? 'gain' : 'loss');
+            document.getElementById('portfolio-return').textContent = (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
+            document.getElementById('portfolio-return').className = 'value ' + (ret >= 0 ? 'gain' : 'loss');
+
+            Charts.renderAllocationChart(portfolioData);
+        }
+
+        function renderRisk() {
+            // Compute portfolio-level returns
+            const portReturns = [];
+            const firstSym = Object.keys(marketData)[0];
+            const numDays = marketData[firstSym].length;
+
+            for (let d = 1; d < numDays; d++) {
+                let dayReturn = 0;
+                portfolioData.forEach(h => {
+                    const data = marketData[h.symbol];
+                    if (data && data[d]) dayReturn += h.weight * data[d].return;
+                });
+                portReturns.push(dayReturn);
+            }
+
+            const varParam = RiskEngine.calculateVaR(portReturns, 0.95, 'parametric');
+            const varHist = RiskEngine.calculateVaR(portReturns, 0.95, 'historical');
+            const cvar = RiskEngine.calculateCVaR(portReturns, 0.95);
+            const sharpe = RiskEngine.calculateSharpeRatio(portReturns, 0.05);
+
+            document.getElementById('var-param').textContent = (varParam * 100).toFixed(2) + '%';
+            document.getElementById('var-hist').textContent = (varHist * 100).toFixed(2) + '%';
+            document.getElementById('cvar').textContent = (cvar * 100).toFixed(2) + '%';
+            document.getElementById('sharpe').textContent = sharpe.toFixed(3);
+
+            // Portfolio price series for drawdown
+            let portValue = 100;
+            const portPrices = [portValue];
+            for (const r of portReturns) {
+                portValue *= (1 + r);
+                portPrices.push(portValue);
+            }
+            const dd = RiskEngine.calculateMaxDrawdown(portPrices);
+            Charts.renderDrawdownChart(dd.series);
+            Charts.renderRiskReturnScatter(portfolioData, marketData);
+        }
+
+        function runMonteCarlo() {
+            const numSims = parseInt(document.getElementById('mc-num-sims').value);
+            const days = parseInt(document.getElementById('mc-days').value);
+            const expReturn = parseFloat(document.getElementById('mc-return').value) / 100;
+            const vol = parseFloat(document.getElementById('mc-vol').value) / 100;
+
+            let totalValue = 0;
+            portfolioData.forEach(h => totalValue += h.shares * h.current_price);
+
+            const sims = RiskEngine.monteCarloSimulation(totalValue, expReturn, vol, days, numSims);
+            Charts.renderMonteCarloChart(sims, days);
+
+            const finals = sims.map(s => s[s.length - 1]);
+            Charts.renderMonteCarloDistribution(finals);
+
+            document.getElementById('mc-mean').textContent = '$' + Math.round(RiskEngine.mean(finals)).toLocaleString();
+            document.getElementById('mc-median').textContent = '$' + Math.round(RiskEngine.percentile(finals, 50)).toLocaleString();
+            document.getElementById('mc-p5').textContent = '$' + Math.round(RiskEngine.percentile(finals, 5)).toLocaleString();
+            document.getElementById('mc-p95').textContent = '$' + Math.round(RiskEngine.percentile(finals, 95)).toLocaleString();
+        }
+
+        function setOptionType(type) {
+            currentOptionType = type;
+            document.getElementById('btn-call').classList.toggle('active', type === 'call');
+            document.getElementById('btn-put').classList.toggle('active', type === 'put');
+            calculateOption();
+        }
+
+        function calculateOption() {
+            const S = parseFloat(document.getElementById('bs-spot').value);
+            const K = parseFloat(document.getElementById('bs-strike').value);
+            const T = parseFloat(document.getElementById('bs-time').value);
+            const r = parseFloat(document.getElementById('bs-rate').value) / 100;
+            const sigma = parseFloat(document.getElementById('bs-vol').value) / 100;
+
+            const price = currentOptionType === 'call'
+                ? BlackScholes.blackScholesCall(S, K, T, r, sigma)
+                : BlackScholes.blackScholesPut(S, K, T, r, sigma);
+
+            const intrinsic = currentOptionType === 'call'
+                ? Math.max(S - K, 0)
+                : Math.max(K - S, 0);
+
+            document.getElementById('bs-price').textContent = '$' + price.toFixed(4);
+            document.getElementById('bs-intrinsic').textContent = '$' + intrinsic.toFixed(4);
+            document.getElementById('bs-time-value').textContent = '$' + (price - intrinsic).toFixed(4);
+
+            const greeks = BlackScholes.calculateGreeks(S, K, T, r, sigma);
+            const g = greeks[currentOptionType];
+            document.getElementById('greek-delta').textContent = g.delta.toFixed(4);
+            document.getElementById('greek-gamma').textContent = g.gamma.toFixed(4);
+            document.getElementById('greek-theta').textContent = g.theta.toFixed(4);
+            document.getElementById('greek-vega').textContent = g.vega.toFixed(4);
+            document.getElementById('greek-rho').textContent = g.rho.toFixed(4);
+
+            Charts.renderPayoffDiagram(currentOptionType, K, price, [S * 0.7, S * 1.3]);
+        }
+    </script>
+</body>
+</html>
