@@ -1,12 +1,12 @@
 /* Chart Rendering with Plotly.js */
 
 const darkLayout = {
-    paper_bgcolor: 'rgba(0, 19, 39,0)',
-    plot_bgcolor: 'rgba(0, 19, 39,0)',
-    font: { color: '#adc4e0', family: 'Segoe UI, sans-serif' },
+    paper_bgcolor: 'rgba(255, 255, 255,0)',
+    plot_bgcolor: 'rgba(255, 255, 255,0)',
+    font: { color: '#5a6b86', family: 'Segoe UI, sans-serif' },
     margin: { t: 30, r: 20, b: 40, l: 50 },
-    xaxis: { gridcolor: '#001327', zerolinecolor: '#001327' },
-    yaxis: { gridcolor: '#001327', zerolinecolor: '#001327' }
+    xaxis: { gridcolor: '#ffffff', zerolinecolor: '#ffffff' },
+    yaxis: { gridcolor: '#ffffff', zerolinecolor: '#ffffff' }
 };
 
 function renderAllocationChart(portfolioData) {
@@ -20,9 +20,9 @@ function renderAllocationChart(portfolioData) {
         labels: Object.keys(sectors),
         type: 'pie',
         hole: 0.5,
-        marker: { colors: ['#35b56a','#35b56a','#c9a44e','#35b56a','#e0705f','#c9a44e','#35b56a','#e0705f'] },
+        marker: { colors: ['#1f4e8c','#1f4e8c','#b5842a','#1f4e8c','#c0392b','#b5842a','#1f4e8c','#c0392b'] },
         textinfo: 'label+percent',
-        textfont: { size: 11, color: '#f4f3ef' }
+        textfont: { size: 11, color: '#14263f' }
     }], {
         ...darkLayout,
         showlegend: false,
@@ -47,9 +47,9 @@ function renderRiskReturnScatter(portfolioData, marketData) {
         text: points.map(p => p.symbol),
         mode: 'markers+text',
         type: 'scatter',
-        marker: { size: 12, color: '#35b56a', opacity: 0.8 },
+        marker: { size: 12, color: '#1f4e8c', opacity: 0.8 },
         textposition: 'top center',
-        textfont: { size: 10, color: '#adc4e0' }
+        textfont: { size: 10, color: '#5a6b86' }
     }], {
         ...darkLayout,
         xaxis: { ...darkLayout.xaxis, title: { text: 'Annualized Volatility (%)', font: { size: 12 } } },
@@ -66,7 +66,7 @@ function renderMonteCarloChart(simulations, days) {
     for (let i = 0; i < nDisplay; i++) {
         traces.push({
             x: xVals, y: simulations[i], type: 'scatter', mode: 'lines',
-            line: { width: 0.5, color: 'rgba(53, 181, 106,0.15)' },
+            line: { width: 0.5, color: 'rgba(31, 78, 140,0.15)' },
             showlegend: false, hoverinfo: 'skip'
         });
     }
@@ -80,9 +80,9 @@ function renderMonteCarloChart(simulations, days) {
         p95.push(RiskEngine.percentile(vals, 95));
     }
 
-    traces.push({ x: xVals, y: p5, type: 'scatter', mode: 'lines', name: '5th %ile', line: { color: '#e0705f', width: 2 } });
-    traces.push({ x: xVals, y: p50, type: 'scatter', mode: 'lines', name: 'Median', line: { color: '#35b56a', width: 2 } });
-    traces.push({ x: xVals, y: p95, type: 'scatter', mode: 'lines', name: '95th %ile', line: { color: '#35b56a', width: 2 } });
+    traces.push({ x: xVals, y: p5, type: 'scatter', mode: 'lines', name: '5th %ile', line: { color: '#c0392b', width: 2 } });
+    traces.push({ x: xVals, y: p50, type: 'scatter', mode: 'lines', name: 'Median', line: { color: '#1f4e8c', width: 2 } });
+    traces.push({ x: xVals, y: p95, type: 'scatter', mode: 'lines', name: '95th %ile', line: { color: '#1f4e8c', width: 2 } });
 
     Plotly.newPlot('mc-paths-chart', traces, {
         ...darkLayout,
@@ -95,7 +95,7 @@ function renderMonteCarloChart(simulations, days) {
 function renderMonteCarloDistribution(finalValues) {
     Plotly.newPlot('mc-dist-chart', [{
         x: finalValues, type: 'histogram', nbinsx: 50,
-        marker: { color: 'rgba(53, 181, 106,0.6)', line: { color: '#35b56a', width: 1 } }
+        marker: { color: 'rgba(31, 78, 140,0.6)', line: { color: '#1f4e8c', width: 1 } }
     }], {
         ...darkLayout,
         xaxis: { ...darkLayout.xaxis, title: { text: 'Final Portfolio Value ($)', font: { size: 12 } }, tickformat: ',.0f' },
@@ -109,8 +109,8 @@ function renderDrawdownChart(drawdownSeries) {
         y: drawdownSeries.map(d => -d * 100),
         type: 'scatter', mode: 'lines',
         fill: 'tozeroy',
-        fillcolor: 'rgba(224, 112, 95,0.15)',
-        line: { color: '#e0705f', width: 1.5 }
+        fillcolor: 'rgba(192, 57, 43,0.15)',
+        line: { color: '#c0392b', width: 1.5 }
     }], {
         ...darkLayout,
         xaxis: { ...darkLayout.xaxis, title: { text: 'Trading Days', font: { size: 12 } } },
@@ -133,8 +133,8 @@ function renderPayoffDiagram(optionType, strike, premium, spotRange) {
     }
 
     Plotly.newPlot('payoff-chart', [
-        { x: spots, y: payoffs, type: 'scatter', mode: 'lines', name: 'P&L', line: { color: '#35b56a', width: 2 } },
-        { x: [low, high], y: [0, 0], type: 'scatter', mode: 'lines', name: 'Break-even', line: { color: '#adc4e0', width: 1, dash: 'dash' }, showlegend: false }
+        { x: spots, y: payoffs, type: 'scatter', mode: 'lines', name: 'P&L', line: { color: '#1f4e8c', width: 2 } },
+        { x: [low, high], y: [0, 0], type: 'scatter', mode: 'lines', name: 'Break-even', line: { color: '#5a6b86', width: 1, dash: 'dash' }, showlegend: false }
     ], {
         ...darkLayout,
         xaxis: { ...darkLayout.xaxis, title: { text: 'Spot Price ($)', font: { size: 12 } } },
