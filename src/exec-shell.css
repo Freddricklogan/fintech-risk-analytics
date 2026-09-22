@@ -18,7 +18,7 @@
   --panel-2: #16223a;
   --border: #22304d;
   --text: #e6edf3;
-  --muted: #8b98b0;
+  --muted: #9da9c0;
   --primary: #d4a95a;
   --secondary: #58a6ff;
   --ok: #3fb950;
@@ -387,7 +387,8 @@ a {
   position: sticky;
   top: 0;
   z-index: 500;
-  background: linear-gradient(180deg, var(--panel) 0%, var(--header-fade) 100%);
+  background-color: var(--panel);
+  background-image: linear-gradient(180deg, var(--panel) 0%, var(--header-fade) 100%);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
