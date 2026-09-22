@@ -1,6 +1,6 @@
 /** Wires holdings, risk, projection and options to the page and the Executive Shell. */
 import { loadChartLib, makeCharts } from './charts.js';
-import { mountExecShell } from './exec-shell.js';
+import { mountExecShell, tokens } from './exec-shell.js';
 import { blackScholes, breakEven, payoffCurve } from './options.js';
 import { parsePortfolioCsv, sectorAllocation, valueHoldings } from './portfolio.js';
 import { makeSampler } from './rng.js';
@@ -79,10 +79,10 @@ function renderRisk() {
   setText('ann-stats', `annualised return ${pct(risk.annRet, 1)} · volatility ${pct(risk.annVol, 1)} · ${risk.days} daily returns`);
   setText('risk-note', risk.missing.length ? `No return history for ${risk.missing.join(', ')}; weights renormalised over the ${pct(port.coveredWeight, 0)} of value with history.` : 'All holdings have a return history in the shipped synthetic dataset.');
   const dates = state.market[covered[0].symbol].slice(1).map((d) => d.date);
-  charts.line($('drawdown-chart'), dates, [{ label: 'Drawdown', data: risk.dd.series.slice(1).map((d) => -d * 100), colour: '#f85149', fill: true }], '', 'Drawdown from peak (%)');
+  charts.line($('drawdown-chart'), dates, [{ label: 'Drawdown', data: risk.dd.series.slice(1).map((d) => -d * 100), colour: tokens().danger, fill: true }], '', 'Drawdown from peak (%)');
   charts.scatter($('risk-return-chart'), covered.map((r) => ({ symbol: r.symbol, risk: std(rb[r.symbol]) * Math.sqrt(252) * 100, ret: mean(rb[r.symbol]) * 252 * 100 })));
   const pnlSorted = sorted(mc.pnl);
-  charts.histogram($('var-chart'), histogram(Array.from(pnlSorted).map((x) => x * 100), 50), 'Simulated daily portfolio return (%)', '#f85149');
+  charts.histogram($('var-chart'), histogram(Array.from(pnlSorted).map((x) => x * 100), 50), 'Simulated daily portfolio return (%)', tokens().danger);
   setText('var-chart-note', `Monte Carlo daily returns from the empirical mean and covariance (20,000 draws, seed 42); 5th percentile ${pct(percentileSorted(pnlSorted, 0.05))}.`);
   shell?.refreshKpis();
 }
@@ -96,11 +96,11 @@ function runProjection() {
     const labels = Array.from({ length: params.days + 1 }, (_, i) => i);
     charts.line($('mc-paths-chart'), labels, [
       ...r.sample.slice(0, 25).map((p, i) => ({ label: `path ${i + 1}`, data: p, colour: `hsla(${(i * 360) / 25}, 70%, 65%, .35)`, width: 1 })),
-      { label: '5th percentile', data: r.p5, colour: '#f85149', dash: [6, 4] },
-      { label: 'Median', data: r.p50, colour: '#e6edf3' },
-      { label: '95th percentile', data: r.p95, colour: '#3fb950', dash: [6, 4] }
+      { label: '5th percentile', data: r.p5, colour: tokens().danger, dash: [6, 4] },
+      { label: 'Median', data: r.p50, colour: tokens().text },
+      { label: '95th percentile', data: r.p95, colour: tokens().ok, dash: [6, 4] }
     ], 'Trading day', 'Portfolio value ($)');
-    charts.histogram($('mc-dist-chart'), histogram(r.finals, 40), 'Terminal value ($)', '#3fb950');
+    charts.histogram($('mc-dist-chart'), histogram(r.finals, 40), 'Terminal value ($)', tokens().ok);
     const s = sorted(r.finals);
     setText('mc-mean', money(mean(r.finals)));
     setText('mc-median', money(percentileSorted(s, 0.5)));
@@ -133,7 +133,7 @@ function calculateOption() {
     setText('greek-rho', fixed(side.rho));
     setText('bs-breakeven', money(breakEven(state.optionType, params.K, side.price), 2));
     const curve = payoffCurve(state.optionType, params.K, side.price, [params.S * 0.7, params.S * 1.3]);
-    charts.line($('payoff-chart'), curve.map((p) => p.spot.toFixed(0)), [{ label: 'P&L at expiry', data: curve.map((p) => p.pnl), colour: '#58A6FF', fill: true }], 'Spot at expiry', 'P&L per share');
+    charts.line($('payoff-chart'), curve.map((p) => p.spot.toFixed(0)), [{ label: 'P&L at expiry', data: curve.map((p) => p.pnl), colour: tokens().accent, fill: true }], 'Spot at expiry', 'P&L per share');
     setText('bs-note', '');
   } catch (err) {
     setText('bs-note', err.message);
@@ -185,6 +185,7 @@ async function boot() {
   $('csv-file').addEventListener('change', (e) => e.target.files[0] && importCsv(e.target.files[0]));
 
   shell = mountExecShell({
+  theme: 'signal',
     title: 'FinTech Risk Analytics',
     tagline: 'Portfolio valuation, three Value-at-Risk methods side by side, a seeded Monte Carlo projection and Black–Scholes Greeks — on a synthetic 252-day history shipped with the repository, or your own holdings CSV.',
     repo: 'https://github.com/Freddricklogan/fintech-risk-analytics',

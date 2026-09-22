@@ -2,7 +2,7 @@
 .mc-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0 0 16px; }
 @media (max-width: 640px) { .mc-tabs { grid-template-columns: repeat(2, 1fr); } }
 .tab-button { padding: 10px 8px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); cursor: pointer; font: inherit; font-size: .88rem; font-weight: 600; }
-.tab-button.active { background: var(--accent); color: #06101f; border-color: var(--accent); }
+.tab-button.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .tab-content { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 980px) { .tab-content { grid-template-columns: minmax(0, 1fr); } }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; min-width: 0; }
@@ -15,7 +15,7 @@
 .check-row { display: flex; align-items: center; gap: 8px; font-size: .84rem; margin-top: 10px; }
 .button-group { display: flex; gap: 8px; margin-top: 14px; }
 .btn { padding: 9px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
-.btn--primary { background: var(--accent); border-color: var(--accent); color: #06101f; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn:disabled { opacity: .6; cursor: progress; }
 .progress { margin-top: 12px; }
 .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
@@ -48,7 +48,7 @@ th { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: 
 .wide { grid-column: 1 / -1; }
 .chart-wrapper--tall { height: 340px; }
 .toggle { display: flex; gap: 6px; margin-bottom: 12px; }
-.toggle .btn.active { background: var(--accent); border-color: var(--accent); color: #06101f; }
+.toggle .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .import input[type=file] { color: var(--muted); font-size: .84rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 .method code { overflow-wrap: anywhere; }
