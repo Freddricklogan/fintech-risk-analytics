@@ -60,7 +60,7 @@ flowchart LR
     MKT[("data/market-data.json<br/>252 synthetic business days")]:::data
     UI["index.html + src/ui.js<br/>tabs · forms · textContent tables"]:::client
     MAIN["src/main.js<br/>Executive Shell · KPIs · tour"]:::client
-    subgraph PURE["Pure modules (22 tests)"]
+    subgraph PURE["Pure modules (30 tests)"]
       PF["portfolio.js<br/>CSV parse · valuation · weights"]:::service
       RK["risk.js<br/>VaR ×3 · ES · Sharpe · drawdown · projection"]:::service
       OP["options.js<br/>Black–Scholes · Greeks · payoff"]:::service
